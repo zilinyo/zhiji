@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"zhiji/api/conf"
+	_ "zhiji/api/conf"
 )
 
 /**  设置opt
@@ -22,14 +24,14 @@ opt := &cos.MultiUploadOptions{
 type Cosupload struct {
 }
 
-var domain string = "https://zhiji-1253509153.cos.ap-shanghai.myqcloud.com/"
-var u, _ = url.Parse(domain)
+//var domain string = "https://zhiji-1253509153.cos.ap-shanghai.myqcloud.com/"
+var u, _ = url.Parse(conf.DOMAIN)
 var b = &cos.BaseURL{BucketURL: u}
 var c = cos.NewClient(b, &http.Client{
 	Transport: &cos.AuthorizationTransport{
 		//如实填写账号和密钥，也可以设置为环境变量
-		SecretID:  os.Getenv("AKIDyl13pNrliYBZjofLl00lfMp31MVXmr9B"),
-		SecretKey: os.Getenv("vbNuJTNAhy0A5sQjSxDEAsSntWv5Cfui"),
+		SecretID:  os.Getenv(conf.SECREID),
+		SecretKey: os.Getenv(conf.SECREKEY),
 	},
 })
 
@@ -47,7 +49,7 @@ func (co Cosupload) Uploadfile(name, file string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return domain + name, err
+	return conf.DOMAIN + name, err
 }
 
 /**
