@@ -17,7 +17,7 @@ var Eloquent *gorm.DB
 func init() {
 	var err error
 	Eloquent, err = gorm.Open(
-		"mysql", "root:root@tcp(127.0.0.1:3306)/goodbuy?charset=utf8")
+		"mysql", "root:root@tcp(127.0.0.1:3306)/zhiji?charset=utf8&parseTime=true")
 	if err != nil {
 		fmt.Printf("mysql连接失败 %v", err)
 	}

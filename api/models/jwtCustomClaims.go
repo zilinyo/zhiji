@@ -17,7 +17,7 @@ type jwtCustomClaims struct {
 func CreateToken(SecretKey []byte, issuer string, Uid uint, isAdmin bool) (tokenString string, err error) {
 	claims := &jwtCustomClaims{
 		jwt.StandardClaims{
-			ExpiresAt: int64(time.Now().Add(time.Hour * 72).Unix()),
+			ExpiresAt: int64(time.Now().Add(time.Hour * 24).Unix()),
 			Issuer:    issuer,
 		},
 		Uid,
