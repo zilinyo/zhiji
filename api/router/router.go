@@ -4,7 +4,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
-	"zhiji/api/apis"
 	. "zhiji/api/apis"
 	jwt "zhiji/api/middleware"
 )
@@ -21,45 +20,66 @@ func InitRouter() *gin.Engine {
 		AllowAllOrigins:  true,
 		MaxAge:           12 * time.Hour,
 	}))
-	router.POST("/login", apis.Login)
-	router.POST("/register", apis.Register)
+	//login register
+
+	router.POST("/login", Login)
+	router.POST("/register", Register)
+
 	router.Use(jwt.JWTAuth())
-
 	{
-		router.GET("/api/user/list", List)
-		router.GET("/routinne", Routine)
-		router.GET("/lock", Lock)
-		router.POST("/save-order", Saveorder)
-		router.POST("/setcount", Setcount)
-		router.POST("/getcount", Getcount)
-		//分类
-		router.GET("/category/all", GetAll)
-		router.GET("/category/one", GetOne)
-		router.POST("/category/save", CategorySave)
-		router.DELETE("/category/del", CategoryDel)
-		router.PUT("/category/update", CategoryUpdate)
-		//品牌
-		router.GET("/brand/all", BrandAll)
-		router.GET("/brand/one", BrandtOne)
-		router.POST("/brand/save", BrandSave)
-		router.DELETE("/brand/del", BrandDel)
-		router.PUT("/brand/update", BrandUpdate)
 
-		//添加商品
-		router.POST("/product/save", ProductSave)
-		router.GET("/product/all", ProductAll)
-		router.PUT("/product/update", ProductUpdate)
-		router.DELETE("/product/del", ProductyDel)
+		router.GET("/api/user/list", List)
+
+		router.GET("/tree", Tree)
+
+		//分类
+		category := router.Group("/category")
+		{
+			category.GET("", GetAllCategory)
+			category.GET("/:id", GetOneCategory)
+			category.POST("", FetchSingleCategory)
+			category.DELETE("/:id", DestroyCategory)
+			category.PUT("/:id", UpdateCategory)
+
+		}
+
+		//品牌
+		brand := router.Group("/brand")
+		{
+			brand.GET("", GetAllBrand)
+			brand.GET("/:id", GetOneBrand)
+			brand.POST("", FetchSingleBrand)
+			brand.DELETE("/:id", DestroyBrand)
+			brand.PUT("/:id", UpdateBrand)
+
+		}
+
+		//品牌
+		product := router.Group("/product")
+		{
+			product.GET("", GetAllProduct)
+			//product.GET("/:id", GetOneProduct)
+			product.POST("", FetchSingleProduct)
+			//product.DELETE("/:id", DestroyProduct)
+			product.PUT("/:id", UpdateProduct)
+		}
+		//router.GET("/brand/all", BrandAll)
+		//router.GET("/brand/one", BrandtOne)
+		//router.POST("/brand/save", BrandSave)
+		//router.DELETE("/brand/del", BrandDel)
+		//router.PUT("/brand/update", BrandUpdate)
+
+		//商品
+		//router.POST("/product/save", ProductSave)
+		//router.GET("/product/all", ProductAll)
+		//router.PUT("/product/update", ProductUpdate)
+		//router.DELETE("/product/del", ProductyDel)
+
+		//图片
 		router.POST("/upload", Uploadfiles)
 		router.DELETE("/deleteFile", DelFile)
 
-		//router.GET("/SetClient", Uploadfile)
-		//router.GET("/DelClient", Delfile)
-
 	}
-
-	//router.GET("/api/user/list", List)
-	//router.GET("/api/statistics", Statistics)
 
 	return router
 }

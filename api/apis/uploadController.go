@@ -1,25 +1,35 @@
 package apis
 
 import (
-	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"net/http"
+	"os"
 	. "zhiji/api/components"
 )
 
+//上传文件
 func Uploadfiles(c *gin.Context) {
-	var Up map[string]interface{}
-	body, _ := ioutil.ReadAll(c.Request.Body)
-	json.Unmarshal(body, &Up)
-
+	file, err := c.FormFile("file")
+	if err != nil {
+		return
+	}
+	filename := file.Filename
+	fmt.Println("........", filename)
+	errs := c.SaveUploadedFile(file, "upload/"+filename)
+	if err != nil {
+		fmt.Println(errs)
+	}
 	co := new(Cosupload)
-	result, err := co.Uploadfile(Up["serverPath"].(string), Up["localPath"].(string))
+	//上传到cos
+	result, err := co.Uploadfile("images/"+filename, "upload/"+filename)
+	os.Remove("upload" + filename)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    500,
 			"message": "失败",
 			"result":  result,
+			"err":     err,
 		})
 		return
 	}
@@ -33,6 +43,7 @@ func DelFile(c *gin.Context) {
 	serverPath := c.Query("serverPath")
 	co := new(Cosupload)
 	result, err := co.Delfile(serverPath)
+	fmt.Println(err)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    500,

@@ -55,33 +55,6 @@ type SupplierInfo struct {
 }
 
 /******sql******
-CREATE TABLE `brand_info` (
-  `brand_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT COMMENT '品牌ID',
-  `brand_name` varchar(50) NOT NULL COMMENT '品牌名称',
-  `telephone` varchar(50) NOT NULL COMMENT '联系电话',
-  `brand_web` varchar(100) DEFAULT NULL COMMENT '品牌网络',
-  `brand_logo` varchar(100) DEFAULT NULL COMMENT '品牌logo URL',
-  `brand_desc` varchar(150) DEFAULT NULL COMMENT '品牌描述',
-  `brand_status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '品牌状态,0禁用,1启用',
-  `brand_order` tinyint(4) NOT NULL DEFAULT '0' COMMENT '排序',
-  `modified_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-  PRIMARY KEY (`brand_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='品牌信息表'
-******sql******/
-// BrandInfo 品牌信息表
-type BrandInfo struct {
-	BrandID      int16  `gorm:"primary_key;column:brand_id;type:smallint(5) unsigned;not null"` // 品牌ID
-	BrandName    string `gorm:"column:brand_name;type:varchar(50);not null"`                    // 品牌名称
-	Telephone    string `gorm:"column:telephone;type:varchar(50);not null"`                     // 联系电话
-	BrandWeb     string `gorm:"column:brand_web;type:varchar(100)"`                             // 品牌网络
-	BrandLogo    string `gorm:"column:brand_logo;type:varchar(100)"`                            // 品牌logo URL
-	BrandDesc    string `gorm:"column:brand_desc;type:varchar(150)"`                            // 品牌描述
-	BrandStatus  int8   `gorm:"column:brand_status;type:tinyint(4);not null"`                   // 品牌状态,0禁用,1启用
-	BrandOrder   int8   `gorm:"column:brand_order;type:tinyint(4);not null"`                    // 排序
-	ModifiedTime string `gorm:"column:modified_time;type:timestamp;not null"`                   // 最后修改时间
-}
-
-/******sql******
 CREATE TABLE `customer_addr` (
   `customer_addr_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
   `customer_id` int(10) unsigned NOT NULL COMMENT 'customer_login表的自增ID',
@@ -125,29 +98,6 @@ type CustomerLevelInf struct {
 	MinPoint      int       `gorm:"column:min_point;type:int(10) unsigned;not null"`            // 该级别最低积分
 	MaxPoint      int       `gorm:"column:max_point;type:int(10) unsigned;not null"`            // 该级别最高积分
 	ModifiedTime  time.Time `gorm:"column:modified_time;type:timestamp;not null"`               // 最后修改时间
-}
-
-/******sql******
-CREATE TABLE `product_category` (
-  `category_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT COMMENT '分类ID',
-  `category_name` varchar(10) NOT NULL COMMENT '分类名称',
-  `category_code` varchar(10) NOT NULL COMMENT '分类编码',
-  `parent_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '父分类ID',
-  `category_level` tinyint(4) NOT NULL DEFAULT '1' COMMENT '分类层级',
-  `category_status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '分类状态',
-  `modified_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-  PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='商品分类表'
-******sql******/
-// ProductCategory 商品分类表
-type ProductCategory struct {
-	CategoryID     int16  `gorm:"primary_key;column:category_id;type:smallint(5) unsigned;not null"` // 分类ID
-	CategoryName   string `gorm:"column:category_name;type:varchar(10);not null"`                    // 分类名称
-	CategoryCode   string `gorm:"column:category_code;type:varchar(10);not null"`                    // 分类编码
-	ParentID       int16  `gorm:"column:parent_id;type:smallint(5) unsigned;not null"`               // 父分类ID
-	CategoryLevel  int8   `gorm:"column:category_level;type:tinyint(4);not null"`                    // 分类层级
-	CategoryStatus int8   `gorm:"column:category_status;type:tinyint(4);not null"`                   // 分类状态
-	ModifiedTime   string `gorm:"column:modified_time;type:timestamp;not null"`                      // 最后修改时间
 }
 
 /******sql******

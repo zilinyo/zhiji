@@ -1,102 +1,118 @@
 package apis
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"net/http"
-	"strconv"
 	db "zhiji/api/database"
 	"zhiji/api/models"
 )
 
-func BrandAll(c *gin.Context) {
-	var Brand []models.BrandInfo
-	var page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
-	var pageSize, _ = strconv.Atoi(c.DefaultQuery("pageSize", "1"))
-	var total int = 0
-	db.Eloquent.Find(&Brand).Count(&total)
-	db.Eloquent.Limit(pageSize).Offset((page - 1) * pageSize).Find(&Brand)
-	c.JSON(http.StatusOK, gin.H{
-		"code":     200,
-		"data":     Brand,
-		"total":    total,
-		"page":     page,
-		"pageSize": pageSize,
-	})
-}
-func BrandtOne(c *gin.Context) {
-	var Brand []models.BrandInfo
-	id := c.Query("id")
-	db.Eloquent.Find(&Brand, id)
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": Brand,
-	})
-}
-func BrandSave(c *gin.Context) {
-	form := struct {
-		BrandName    string `form:"brand_name" binding:"required"`
-		Telephone    string `form:"telephone" binding:"required"`    // 联系电话
-		BrandWeb     string `form:"brand_web" `                      // 品牌网络
-		BrandLogo    string `form:"brand_logo" `                     // 品牌logo URL
-		BrandDesc    string `form:"brand_desc" `                     // 品牌描述
-		BrandStatus  int8   `form:"brand_status" binding:"required"` // 品牌状态,0禁用,1启用
-		BrandOrder   int8   `form:"brand_order" binding:"required"`  // 排序
-		ModifiedTime string `form:"modified_time" binding:"required"`
-	}{
-		BrandWeb:  "null",
-		BrandLogo: "null",
-		BrandDesc: "0",
-	}
-	if err := c.BindJSON(&form); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": err.Error(),
-		})
+/*
+品牌数据
+*/
+func GetAllBrand(c *gin.Context) {
+
+	var brandInfo []models.BrandInfo
+
+	err := db.Eloquent.Find(&brandInfo).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errNotExist.Error()})
+
 		return
 	}
-	//	fmt.Println(form)
-	Brand := models.BrandInfo{
-		BrandName:    form.BrandName,
-		Telephone:    form.Telephone,
-		BrandWeb:     form.BrandWeb,
-		BrandLogo:    form.BrandLogo,
-		BrandDesc:    form.BrandDesc,
-		BrandStatus:  form.BrandStatus,
-		BrandOrder:   form.BrandOrder,
-		ModifiedTime: form.ModifiedTime,
-	}
-	ok := db.Eloquent.NewRecord(Brand) // => 主键为空返回`true`
-	if !ok {
-		panic("保存失败")
-	}
-	db.Eloquent.Create(&Brand)
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": form,
-	})
+	c.JSON(http.StatusOK, gin.H{"code": "200", "data": &brandInfo})
 }
-func BrandDel(c *gin.Context) {
 
-	var Brand []models.BrandInfo
-	db.Eloquent.Delete(&Brand, c.Query("id"))
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": Brand,
-	})
+/*
+单条记录
+*/
+func GetOneBrand(c *gin.Context) {
+
+	var brandInfo models.BrandInfo
+
+	id := c.Query("id")
+
+	err := db.Eloquent.Find(&brandInfo, id).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errNotExist.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": &brandInfo})
 }
-func BrandUpdate(c *gin.Context) {
-	var user map[string]interface{}
-	body, _ := ioutil.ReadAll(c.Request.Body)
-	json.Unmarshal(body, &user)
-	var Brand []models.BrandInfo
-	id := user["BrandId"]
-	db.Eloquent.Model(&Brand).Where("brand_id = ?", id).
-		Updates(user)
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": user,
-	})
+/*
+添加
+*/
+func FetchSingleBrand(c *gin.Context) {
+	var brandInfo models.BrandInfo
+
+	if err := c.ShouldBind(&brandInfo); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInvalidBody.Error(), "err": err.Error()})
+
+		return
+	}
+
+	err := db.Eloquent.Create(&brandInfo).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": brandInfo.BrandID})
+}
+
+/*
+删除
+*/
+func DestroyBrand(c *gin.Context) {
+
+	var brandInfo models.BrandInfo
+
+	err := db.Eloquent.Delete(&brandInfo, "brand_id ="+c.Param("id")).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errDeletionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": "success"})
+}
+
+/*
+更新
+*/
+func UpdateBrand(c *gin.Context) {
+
+	var brandInfo models.BrandInfo
+
+	if err := c.ShouldBind(&brandInfo); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInvalidBody.Error(), "err": err.Error()})
+
+		return
+	}
+
+	err := db.Eloquent.Model(&brandInfo).Where("brand_id = ?", c.Param("id")).Updates(&brandInfo).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": brandInfo})
 }

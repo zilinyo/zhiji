@@ -18,6 +18,7 @@ import (
 )
 
 const SecretKey = "hello world"
+const UserCollection = "user"
 
 func Login(c *gin.Context) {
 	var Check map[string]interface{}
@@ -27,10 +28,13 @@ func Login(c *gin.Context) {
 	password := Check["Password"]
 	passwords := models.CheckPassword(password.(string))
 	err := db.Eloquent.Where(map[string]interface{}{"login_name": Check["LoginName"], "password": passwords}).Find(&Custom).Error
+	fmt.Print("___________")
 	fmt.Println(err)
 	if err != nil {
-		c.JSON(400, gin.H{
-			"data": "账号密码不对",
+		c.JSON(200, gin.H{
+			"status": -1,
+			"msg":    "账号密码不对",
+			"err":    err,
 		})
 		return
 	}

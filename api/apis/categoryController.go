@@ -1,116 +1,181 @@
 package apis
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"net/http"
-	"strconv"
 	db "zhiji/api/database"
-	"zhiji/api/models"
+	m "zhiji/api/models"
 )
 
-//列表
-func GetAll(c *gin.Context) {
-	var prodict []models.ProductCategory
-	var page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
-	var pageSize, _ = strconv.Atoi(c.DefaultQuery("pageSize", "1"))
-	var total int = 0
-	db.Eloquent.Find(&prodict).Count(&total)
-	db.Eloquent.Limit(pageSize).Offset((page - 1) * pageSize).Find(&prodict)
-	c.JSON(http.StatusOK, gin.H{
-		"code":     200,
-		"data":     prodict,
-		"total":    total,
-		"page":     page,
-		"pageSize": pageSize,
-	})
-}
+/**
+*列表
+ */
+func GetAllCategory(c *gin.Context) {
 
-//一条
-func GetOne(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": 11111,
-	})
-	var prodict models.ProductCategory
-	id := c.Query("id")
-	db.Eloquent.Find(&prodict, id)
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": prodict,
-	})
-}
+	var productCategory []m.ProductCategory
 
-type CaregoryForm struct {
-	CategoryID   string `form:"category_id"`
-	CategoryName string `form:"category_name" binding:"required"`
-	CategoryCode string `form:"CategoryCode" binding:"required"`
-	ParentID     int16  `jsonn:"parent_id" binding:"required"`
-	//CategoryLevel int8 `form:"category_level" binding:"required"`
-	CategoryStatus int8   `form:"category_status"binding:"required"`
-	ModifiedTime   string `form:"modified_time"binding:"required"`
-	CategoryLevel  int8   `form:"category_level,default=1"`
-}
+	err := db.Eloquent.Find(&productCategory).Error
 
-func CategorySave(c *gin.Context) {
-	form := struct {
-		CategoryID   string `form:"category_id"`
-		CategoryName string `form:"category_name" binding:"required"`
-		CategoryCode string `form:"CategoryCode" binding:"required"`
-		ParentID     int16  `jsonn:"parent_id" binding:"required"`
-		//CategoryLevel int8 `form:"category_level" binding:"required"`
-		CategoryStatus int8   `form:"category_status"binding:"required"`
-		ModifiedTime   string `form:"modified_time"binding:"required"`
-		CategoryLevel  int8   `form:"category_level,default=1"`
-	}{
-		CategoryLevel: 1,
-	}
-	if err := c.BindJSON(&form); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": err.Error(),
-		})
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errNotExist.Error()})
+
 		return
 	}
-	//	fmt.Println(form)
-	Product := models.ProductCategory{
-		CategoryName:   form.CategoryName,
-		CategoryCode:   form.CategoryCode,
-		ParentID:       form.ParentID,
-		CategoryLevel:  form.CategoryLevel,
-		CategoryStatus: form.CategoryStatus,
-		ModifiedTime:   form.ModifiedTime,
-	}
-	ok := db.Eloquent.NewRecord(Product) // => 主键为空返回`true`
-	if !ok {
-		panic("保存失败")
-	}
-	db.Eloquent.Create(&Product)
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": form,
-	})
+	c.JSON(http.StatusOK, gin.H{"code": "200", "data": &productCategory})
 }
-func CategoryDel(c *gin.Context) {
-	var prodict models.ProductCategory
-	db.Eloquent.Delete(&prodict, c.Query("id"))
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": prodict,
-	})
-}
-func CategoryUpdate(c *gin.Context) {
-	var user map[string]interface{}
-	body, _ := ioutil.ReadAll(c.Request.Body)
-	json.Unmarshal(body, &user)
-	var prodict models.ProductCategory
-	id := user["CategoryID"]
-	db.Eloquent.Model(&prodict).Where("brand_id = ?", id).
-		Updates(user)
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": prodict,
-	})
+/**
+*单条数据
+ */
+func GetOneCategory(c *gin.Context) {
+
+	var productCategory m.ProductCategory
+
+	id := c.Query("id")
+
+	err := db.Eloquent.Find(&productCategory, id).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errNotExist.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": &productCategory})
+
+}
+
+/**
+*保存
+ */
+func FetchSingleCategory(c *gin.Context) {
+
+	var productCategory m.ProductCategory
+
+	if err := c.ShouldBind(&productCategory); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInvalidBody.Error(), "err": err.Error()})
+
+		return
+	}
+
+	err := db.Eloquent.Create(&productCategory).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": productCategory})
+}
+
+/**
+*删除分类
+ */
+func DestroyCategory(c *gin.Context) {
+
+	var productCategory m.ProductCategory
+
+	err := db.Eloquent.Delete(&productCategory, "category_id ="+c.Param("id")).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errDeletionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": productCategory})
+}
+
+/**
+*更新分类
+ */
+func UpdateCategory(c *gin.Context) {
+
+	var productCategory m.ProductCategory
+
+	if err := c.ShouldBind(&productCategory); err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInvalidBody.Error(), "err": err.Error()})
+
+		return
+	}
+
+	err := db.Eloquent.Model(&productCategory).Where("category_id = ?", c.Param("id")).Updates(&productCategory).Error
+
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": "failed", "message": errInsertionFailed.Error(), "err": err.Error()})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "data": productCategory})
+}
+
+/**
+无限极分类
+*/
+func Tree(c *gin.Context) {
+	var productCategory []*m.ProductCategory
+
+	db.Eloquent.Find(&productCategory)
+
+	data := buildData(productCategory)
+
+	result := makeTreeCore(0, data)
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "result": result})
+}
+
+/**
+数据组装
+*/
+func buildData(list []*m.ProductCategory) map[int]map[int]*m.ProductCategory {
+
+	var data = make(map[int]map[int]*m.ProductCategory)
+
+	for _, v := range list {
+
+		CategoryID := int(v.CategoryID)
+
+		ParentID := int(v.ParentID)
+
+		if _, ok := data[ParentID]; !ok {
+
+			data[ParentID] = make(map[int]*m.ProductCategory)
+
+		}
+
+		data[ParentID][CategoryID] = v
+	}
+
+	return data
+}
+
+/**
+数据排序
+*/
+func makeTreeCore(index int, data map[int]map[int]*m.ProductCategory) []*m.ProductCategory {
+
+	tmp := make([]*m.ProductCategory, 0)
+
+	for id, item := range data[index] {
+
+		if data[id] != nil {
+
+			item.Children = makeTreeCore(id, data)
+
+		}
+
+		tmp = append(tmp, item)
+	}
+
+	return tmp
 }
