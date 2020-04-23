@@ -33,29 +33,45 @@ const SecretKey = "hello world"
 
 //获取token
 func (CU *CustomerLogin) GetToken() string {
+
 	token, _ := CreateToken([]byte(SecretKey), CU.Password, uint(CU.CustomerID), true)
+
 	return token
 }
 func CheckPassword(pass string) string {
+
 	data := []byte(pass + KEY)
+
 	has := md5.Sum(data)
+
 	md5str1 := fmt.Sprintf("%x", has) //将[]byte转成16进制
+
 	return md5str1
 }
 
 //注册生成password
 func (CU *CustomerLogin) Register() (err error) {
+
 	encryption := CU
+
 	data := []byte(encryption.Password + KEY)
+
 	has := md5.Sum(data)
+
 	md5str1 := fmt.Sprintf("%x", has) //将[]byte转成16进制
+
 	CU.Password = md5str1
+
 	CU.UserStats = 1
+
 	CU.ModifiedTime = time.Now()
+
 	err = db.Eloquent.Save(&CU).Error
+
 	if err != nil {
 		return err
 	}
-	return err
+
+	return nil
 
 }

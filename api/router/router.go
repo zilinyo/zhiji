@@ -4,7 +4,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
+	mini "zhiji/api/MiniProgram"
 	. "zhiji/api/apis"
+
 	jwt "zhiji/api/middleware"
 )
 
@@ -14,12 +16,16 @@ func InitRouter() *gin.Engine {
 	// 跨域
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "X-Requested-With", "X-CSRF-TOKEN", "TOKEN"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "X-Requested-With", "X-CSRF-TOKEN", "TOKEN", "x-litemall-token "},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		AllowAllOrigins:  true,
 		MaxAge:           12 * time.Hour,
 	}))
+	//小程序接口
+	//首页
+	router.GET("wx/home/index", mini.Index)
+
 	//login register
 
 	router.POST("/login", Login)
@@ -27,10 +33,12 @@ func InitRouter() *gin.Engine {
 
 	router.Use(jwt.JWTAuth())
 	{
+		router.GET("test", Test)
 
 		router.GET("/api/user/list", List)
 
 		router.GET("/tree", Tree)
+		router.GET("/getparentcategory", GetParentCategory)
 
 		//分类
 		category := router.Group("/category")
@@ -54,13 +62,13 @@ func InitRouter() *gin.Engine {
 
 		}
 
-		//品牌
+		//商品
 		product := router.Group("/product")
 		{
 			product.GET("", GetAllProduct)
-			//product.GET("/:id", GetOneProduct)
+			product.GET("/:id", GetOneProduct)
 			product.POST("", FetchSingleProduct)
-			//product.DELETE("/:id", DestroyProduct)
+			product.DELETE("/:id", DestroyProduct)
 			product.PUT("/:id", UpdateProduct)
 		}
 		//router.GET("/brand/all", BrandAll)

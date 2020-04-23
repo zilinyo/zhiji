@@ -179,3 +179,10 @@ func makeTreeCore(index int, data map[int]map[int]*m.ProductCategory) []*m.Produ
 
 	return tmp
 }
+
+/**
+查处上级分类
+*/
+func GetParentCategory(c *gin.Context) {
+
+}

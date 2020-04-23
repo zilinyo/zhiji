@@ -20,46 +20,60 @@ import (
 const SecretKey = "hello world"
 const UserCollection = "user"
 
+func Test(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{"code": "200", "data": "success"})
+
+}
+
 func Login(c *gin.Context) {
+
 	var Check map[string]interface{}
+
 	var Custom = models.CustomerLogin{}
+
 	body, _ := ioutil.ReadAll(c.Request.Body)
+
 	json.Unmarshal(body, &Check)
+
 	password := Check["Password"]
+
 	passwords := models.CheckPassword(password.(string))
+
 	err := db.Eloquent.Where(map[string]interface{}{"login_name": Check["LoginName"], "password": passwords}).Find(&Custom).Error
-	fmt.Print("___________")
-	fmt.Println(err)
+
 	if err != nil {
-		c.JSON(200, gin.H{
-			"status": -1,
-			"msg":    "账号密码不对",
-			"err":    err,
-		})
+
+		c.JSON(http.StatusOK, gin.H{"status": -1, "msg": "账号密码不对", "err": err})
 		return
+
 	}
-	c.JSON(200, gin.H{
-		"token": Custom.GetToken(),
-	})
+
+	c.JSON(http.StatusOK, gin.H{"token": Custom.GetToken()})
+
 }
 func Register(c *gin.Context) {
+
 	var register = new(models.CustomerLogin)
+
 	if err := c.BindJSON(register); err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-		})
+
+		c.JSON(http.StatusBadRequest, gin.H{"status": -1, "err": err.Error()})
 		return
+
 	}
+
 	err := register.Register()
+
 	if err != nil {
-		c.JSON(500, gin.H{
-			"err": err,
-		})
+
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
+
 	}
-	c.JSON(200, gin.H{
-		"data": "success",
-	})
+
+	c.JSON(http.StatusOK, gin.H{"code": "200", "data": "success"})
+
 }
 
 var counter int = 0

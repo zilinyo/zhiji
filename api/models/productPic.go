@@ -10,25 +10,28 @@ import (
 CREATE TABLE `product_pic_info` (
   `product_pic_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '商品图片ID',
   `product_id` int(10) unsigned NOT NULL COMMENT '商品ID',
-  `pic_desc` varchar(50) DEFAULT NULL COMMENT '图片描述',
-  `pic_url` varchar(200) NOT NULL COMMENT '图片URL',
-  `is_master` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否主图：0.非主图1.主图',
-  `pic_order` tinyint(4) NOT NULL DEFAULT '0' COMMENT '图片排序',
-  `pic_status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '图片是否有效：0无效 1有效',
+  `specifications_name` varchar(50) NOT NULL COMMENT '规格名称',
+  `specifications_value` varchar(200) NOT NULL DEFAULT '0' COMMENT '规格值',
+  `specifications_price` decimal(8,2) NOT NULL DEFAULT '0.00' COMMENT '规格价格',
+  `specifications_count` int(10) NOT NULL DEFAULT '1' COMMENT '规格数量',
   `modified_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-  PRIMARY KEY (`product_pic_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商品图片信息表'
+  `specifications_url` varchar(255) NOT NULL,
+  PRIMARY KEY (`product_pic_id`),
+  KEY `FK_i1q2cf5pxfr8r69cfci3ssss` (`product_id`),
+  CONSTRAINT `FK_i1q2cf5pxfr8r69cfci3ssss` FOREIGN KEY (`product_id`) REFERENCES `product_info` (`product_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COMMENT='商品图片信息表';
 ******sql******/
 // ProductPicInfo 商品图片信息表
 type ProductPicInfo struct {
-	ProductPicID int       `gorm:"primary_key;column:product_pic_id;type:int(10) unsigned;not null"`                      // 商品图片ID
-	ProductID    int       `form:"product_id" binding:"required" gorm:"column:product_id;type:int(10) unsigned;not null"` // 商品ID
-	PicDesc      string    `form:"pic_desc" binding:"required" gorm:"column:pic_desc;type:varchar(50)"`                   // 图片描述
-	PicURL       string    `form:"pic_url" binding:"required" gorm:"column:pic_url;type:varchar(200);not null"`           // 图片URL
-	IsMaster     int8      `form:"is_master" binding:"required" gorm:"column:is_master;type:tinyint(4);not null"`         // 是否主图：0.非主图1.主图
-	PicOrder     int8      `form:"pic_order" binding:"required" gorm:"column:pic_order;type:tinyint(4);not null"`         // 图片排序
-	PicStatus    int8      ` form:"pic_status" binding:"required" gorm:"column:pic_status;type:tinyint(4);not null"`      // 图片是否有效：0无效 1有效
-	ModifiedTime time.Time `form:"modified_time" gorm:"column:modified_time;type:timestamp;not null"`                     // 最后修改时间
+	ProductPicID        int     `gorm:"primary_key;column:product_pic_id;type:int(10) unsigned;not null"`                                      // 商品图片ID
+	ProductID           int     `form:"product_id" binding:"required" gorm:"column:product_id;type:int(10) unsigned;not null"`                 // 商品ID
+	SpecificationsName  string  `form:"specifications_name" binding:"required" gorm:"column:specifications_name;type:varchar(50)"`             // 规格名称
+	SpecificationsValue string  `form:"specifications_value" binding:"required" gorm:"column:specifications_value;type:varchar(200);not null"` // 规格值
+	SpecificationsPrice float64 `form:"specifications_price" binding:"required" gorm:"column:specifications_price;type:decimal(8,2);not null"` // 规格价格
+	SpecificationsCount int     `form:"specifications_count" binding:"required" gorm:"column:specifications_count;type:int(10);not null"`      // 规格数量
+	SpecificationsUrl   string  `form:"specifications_url" binding:"required" gorm:"column:specifications_url;type:varchar(200);not null"`     // url
+
+	ModifiedTime time.Time `form:"modified_time" gorm:"column:modified_time;type:timestamp;not null"` // 最后修改时间
 }
 
 func (p *ProductPicInfo) BeforeCreate(scope *gorm.Scope) error {
